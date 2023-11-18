@@ -1,0 +1,40 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <file>\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    char *filename = argv[1];
+    int fileDesc;
+
+    fileDesc = open(filename, O_RDWR);
+    if (fileDesc < 0) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    int fileFlags;
+    if (ioctl(fileDesc, FS_IOC_GETFLAGS, &fileFlags) == -1) {
+        perror("Error getting file attributes");
+        close(fileDesc);
+        exit(EXIT_FAILURE);
+    }
+
+    fileFlags ^= FS_NOATIME_FL
+
+    if (ioctl(fileDesc, FS_IOC_SETFLAGS, &fileFlags) == -1) {
+        perror("Error changing file attribute A");
+        close(fileDesc);
+        exit(EXIT_FAILURE);
+    }
+    
+    close(fileDesc);
+
+    return EXIT_SUCCESS;
+}
